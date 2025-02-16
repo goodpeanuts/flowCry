@@ -44,11 +44,7 @@ fn main() {
         let from = String::from_utf8(from.stdout).expect("Failed to convert output to string");
         let from = from.trim();
         let from = fs::canonicalize(from).expect("Failed to get canonical path");
-        fs::copy(
-            from,
-            out_dir.join("rclone.exe"),
-        )
-        .unwrap();
+        fs::copy(from, out_dir.join("rclone.exe")).unwrap();
     }
     #[cfg(target_os = "linux")]
     {

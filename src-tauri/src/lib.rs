@@ -15,3 +15,19 @@ pub fn run() {
 
 pub mod log;
 pub mod rclone;
+
+use std::sync::OnceLock;
+use tauri::AppHandle;
+
+// Add at the top level of lib.rs
+static GLOBAL_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
+
+pub fn get_app_handle() -> &'static AppHandle {
+    GLOBAL_APP_HANDLE.get().expect("AppHandle not initialized")
+}
+
+pub fn set_app_handle(handle: AppHandle) {
+    GLOBAL_APP_HANDLE
+        .set(handle)
+        .expect("Failed to set global app handle");
+}
