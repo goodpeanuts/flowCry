@@ -1,21 +1,26 @@
 use chrono::Local;
 use env_logger::{fmt::Color, Builder};
 use log::LevelFilter;
-use std::io::Write;
 use std::fs::File;
+use std::io::Write;
 use tauri::{AppHandle, Manager};
 
-pub fn setup_logger(log_level: LevelFilter, app_handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup_logger(
+    log_level: LevelFilter,
+    app_handle: &AppHandle,
+) -> Result<(), Box<dyn std::error::Error>> {
     // 获取应用数据目录
-    let app_log_dir = app_handle.path().app_data_dir()
+    let app_log_dir = app_handle
+        .path()
+        .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
-    
+
     // 确保日志目录存在
     std::fs::create_dir_all(&app_log_dir)?;
-    
+
     // 构建日志文件路径
     let log_file = app_log_dir.join("flowcry.log");
-    
+
     // 创建或打开日志文件
     let file = File::create(&log_file)?;
 
