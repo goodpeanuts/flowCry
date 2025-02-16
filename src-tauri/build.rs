@@ -1,4 +1,4 @@
-use std::{env, fs};
+use std::{env, fs, process::Command};
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
@@ -37,8 +37,15 @@ fn main() {
     }
     #[cfg(target_os = "windows")]
     {
+        let from = Command::new("where.exe")
+            .arg("rclone")
+            .output()
+            .expect("Failed to run where command");
+        let from = String::from_utf8(from.stdout).expect("Failed to convert output to string");
+        let from = from.trim();
+        let from = fs::canonicalize(from).expect("Failed to get canonical path");
         fs::copy(
-            "C:\\Program Files\\rclone\\rclone.exe",
+            from,
             out_dir.join("rclone.exe"),
         )
         .unwrap();

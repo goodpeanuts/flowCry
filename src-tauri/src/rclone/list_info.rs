@@ -1,9 +1,20 @@
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use tauri::AppHandle;
 use tauri::Manager;
 
 use crate::rclone::{FileItem, RemoteInfo};
+
+#[cfg(target_os = "windows")]
+fn configure_command(cmd: &mut Command) {
+    use std::os::windows::process::CommandExt;
+    cmd.creation_flags(0x08000000);
+}
+
+#[cfg(not(target_os = "windows"))]
+fn configure_command(_cmd: &mut Command) {
+    // 在非 Windows 平台上不做任何事
+}
 
 fn get_rclone_path(app: &AppHandle) -> PathBuf {
     #[cfg(target_os = "macos")]
@@ -31,9 +42,12 @@ pub fn get_remotes(app: AppHandle) -> Result<Vec<RemoteInfo>, String> {
 
     log::info!("Executing command: rclone listremotes --long");
 
-    let output = Command::new(rclone_path)
-        .args(["listremotes", "--long"])
-        .output()
+    let mut cmd = Command::new(rclone_path);
+    cmd.args(["listremotes", "--long"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    configure_command(&mut cmd);
+    let output = cmd.output()
         .map_err(|e| {
             let err_msg = format!("Failed to execute rclone listremotes: {}", e);
             log::error!("{}", err_msg);
@@ -80,9 +94,12 @@ pub fn list_files(app: AppHandle, remote: String, path: String) -> Result<Vec<Fi
 
     // 获取文件夹
     log::info!("Executing command: rclone lsd {}:{}", remote, path);
-    let dirs_output = Command::new(&rclone_path)
-        .args(["lsd", &format!("{}:{}", remote, path)])
-        .output()
+    let mut cmd = Command::new(&rclone_path);
+    cmd.args(["lsd", &format!("{}:{}", remote, path)])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    configure_command(&mut cmd);
+    let dirs_output = cmd.output()
         .map_err(|e| {
             let err_msg = format!("Failed to execute rclone lsd: {}", e);
             log::error!("{}", err_msg);
@@ -110,9 +127,12 @@ pub fn list_files(app: AppHandle, remote: String, path: String) -> Result<Vec<Fi
 
     // 获取文件
     log::info!("Executing command: rclone ls {}:{}", remote, path);
-    let files_output = Command::new(&rclone_path)
-        .args(["ls", &format!("{}:{}", remote, path)])
-        .output()
+    let mut cmd = Command::new(&rclone_path);
+    cmd.args(["ls", &format!("{}:{}", remote, path)])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    configure_command(&mut cmd);
+    let files_output = cmd.output()
         .map_err(|e| {
             let err_msg = format!("Failed to execute rclone ls: {}", e);
             log::error!("{}", err_msg);
