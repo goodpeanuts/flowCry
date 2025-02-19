@@ -1,4 +1,4 @@
-use std::{env, fs, process::Command};
+use std::{env, fs};
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");

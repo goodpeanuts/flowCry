@@ -50,7 +50,6 @@ pub fn get_remotes() -> Result<Vec<RemoteInfo>, String> {
 // 列出文件和文件夹
 #[tauri::command]
 pub fn list_files(remote: String, path: String) -> Result<Vec<FileItem>, String> {
-    let rclone_path = get_rclone_path();
     log::info!("Listing files for remote '{}' at path '{}'", remote, path);
 
     let mut items = Vec::new();

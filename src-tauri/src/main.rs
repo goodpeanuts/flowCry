@@ -18,24 +18,23 @@ fn main() {
     let app = tauri::Builder::default()
         .setup(|app| {
             set_app_handle(app.handle().clone());
-            rclone::init_rclone_path(&app.handle());
+            rclone::init_rclone_path(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![get_remotes, list_files])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
 
-    if let Err(e) = setup_logger(LOG_LEVEL, &app.handle()) {
+    if let Err(e) = setup_logger(LOG_LEVEL, app.handle()) {
         eprintln!("Failed to setup logger: {}", e);
     }
 
     log::info!("Starting Rclone GUI application");
 
-    app.run(|_app_handle, event| match event {
-        tauri::RunEvent::Exit => {
+    app.run(|_app_handle, event| {
+        if let tauri::RunEvent::Exit = event {
             log::info!("Application exiting");
         }
-        _ => {}
     });
 }
 
